@@ -1,4 +1,4 @@
-import axios from "axios";
+import Insta from "instagram-scraper-api";
 
 export default async function handler(req, res) {
   const { url } = req.query;
@@ -8,32 +8,18 @@ export default async function handler(req, res) {
   }
 
   try {
-    const response = await axios.get(url, {
-      headers: {
-        "User-Agent": "Mozilla/5.0",
-      },
-      timeout: 8000
-    });
+    const media = await Insta.getMedia(url);
 
-    const html = response.data;
-
-    // Look for "video_url" or "display_url" in the HTML
-    const videoMatch = html.match(/"video_url":"([^"]+)"/);
-    const imageMatch = html.match(/"display_url":"([^"]+)"/);
-
-    if (videoMatch) {
-      const videoUrl = videoMatch[1].replace(/\\u0026/g, "&");
-      return res.status(200).json({ media_url: videoUrl });
+    if (!media) {
+      return res.status(404).json({ error: "Media not found or private account" });
     }
 
-    if (imageMatch) {
-      const imageUrl = imageMatch[1].replace(/\\u0026/g, "&");
-      return res.status(200).json({ media_url: imageUrl });
-    }
+    // Get video or image
+    const media_url = media.is_video ? media.video_url : media.display_url;
 
-    return res.status(404).json({ error: "Media not found or private account" });
+    res.status(200).json({ media_url });
 
   } catch (err) {
-    return res.status(500).json({ error: "Failed to fetch Instagram media", details: err.message });
+    res.status(500).json({ error: "Failed to fetch Instagram media", details: err.message });
   }
 }
