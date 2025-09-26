@@ -13,7 +13,7 @@ export default async function handler(req, res) {
 
     const response = await axios.get(apiUrl, {
       headers: { "User-Agent": "Mozilla/5.0" },
-      timeout: 8000 // avoid long delays
+      timeout: 8000
     });
 
     const media = response.data?.graphql?.shortcode_media;
@@ -27,7 +27,6 @@ export default async function handler(req, res) {
     res.status(200).json({ media_url });
 
   } catch (err) {
-    // catch all errors and return as JSON instead of crashing
     res.status(500).json({ 
       error: "Failed to fetch Instagram media", 
       details: err.message 
