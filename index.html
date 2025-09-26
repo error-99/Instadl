@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Instagram Downloader</title>
+<style>
+  body { font-family: Arial; text-align: center; padding: 50px; }
+  input { width: 300px; padding: 10px; margin: 10px; }
+  button { padding: 10px 20px; cursor: pointer; }
+  a { display: block; margin-top: 20px; color: blue; }
+</style>
+</head>
+<body>
+<h1>Instagram Downloader</h1>
+<input type="text" id="instaUrl" placeholder="Paste Instagram URL here" />
+<button onclick="downloadMedia()">Download</button>
+
+<div id="result"></div>
+
+<script>
+async function downloadMedia() {
+  const url = document.getElementById("instaUrl").value;
+  const resultDiv = document.getElementById("result");
+  resultDiv.innerHTML = "Fetching...";
+
+  if (!url.includes("instagram.com")) {
+    resultDiv.innerHTML = "Please enter a valid Instagram URL!";
+    return;
+  }
+
+  try {
+    const apiUrl = `/api/instagram?url=${encodeURIComponent(url)}`;
+    const response = await fetch(apiUrl);
+    const data = await response.json();
+
+    if (data.media_url) {
+      resultDiv.innerHTML = `<a href="${data.media_url}" target="_blank" download>Click here to download</a>`;
+    } else if (data.error) {
+      resultDiv.innerHTML = "Error: " + data.error;
+    }
+  } catch (err) {
+    resultDiv.innerHTML = "Failed to fetch media: " + err.message;
+  }
+}
+</script>
+</body>
+</html>
