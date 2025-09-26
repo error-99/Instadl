@@ -8,21 +8,24 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Add '?__a=1&__d=dis' to get JSON data
-    let apiUrl = url;
-    if (!apiUrl.endsWith("/")) apiUrl += "/";
+    let apiUrl = url.endsWith("/") ? url : url + "/";
     apiUrl += "?__a=1&__d=dis";
 
     const response = await axios.get(apiUrl, {
-      headers: {
-        "User-Agent": "Mozilla/5.0"
-      }
+      headers: { "User-Agent": "Mozilla/5.0" }
     });
 
-    const mediaUrl = response.data.graphql.shortcode_media.display_url;
+    const media = response.data?.graphql?.shortcode_media;
 
-    res.status(200).json({ media_url: mediaUrl });
+    if (!media) {
+      return res.status(404).json({ error: "Media not found or private account" });
+    }
+
+    const media_url = media.is_video ? media.video_url : media.display_url;
+
+    res.status(200).json({ media_url });
+
   } catch (err) {
-    res.status(500).json({ error: "Failed to fetch Instagram media" });
+    res.status(500).json({ error: "Failed to fetch Instagram media", details: err.message });
   }
 }
